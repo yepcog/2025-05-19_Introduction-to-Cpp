@@ -1,0 +1,84 @@
+#include <iostream>
+
+int main() {
+// 1: Setting up a C++ Development Environment
+
+	//IDEs
+	// Integrated Development Environments - tools we use to build software (eg. Visual Studio, CLion, Rider)
+
+	//to create a new project:
+	//- in Visual Studio, creating an Empty Project from the Create a new project window (this window should be accessible from your start screen)
+	//- or File > New > Project from the top menu bar
+
+	//to add C++ file to our project:
+	//- in Visual Studio, we can add a file from the top menu bar under Project > Add New Item
+
+	//in Visual Studio, for example, we can use the Start Without Debugging button on the top menu to build and run the program
+	//our program should open a terminal where we see the output of the code - a simple "Hello World!" message
+	
+	std::cout << "Hello World!";
+	
+	// cout - is an abbreviation of "character output"
+	//we stream things to the character output using << operator, with cout on the left and the thing we want to send on the right
+	//if the thing we want to send is some text, we need to put the text in double quotes
+	//we must be specifically using the " character, commonly called "straight double quotes"
+	//- this is either near the right-shift key or above the 2 on the top row
+	//finally, we need to end our statement using a semi-colon ;
+	
+
+	// Compiling or Building the Program - converting our code into a program that can be executed on a computer
+	// Compiler - the software that converts our code to an executable program
+
+	// Operator - is a symbol that performs some action on one or more objects in our program
+	//in the previous example, the objects it is acting upon are: cout and "Hello World"
+	// Operands - the objects an operator acts upon
+
+	// Statement is an instruction - some action we are commanding the computer to carry out
+	// Semicolon - ; - is used to denote the end of each statement
+
+	//we can stream as many things to the output as we want simply by repeating the pattern on additional lines:
+
+	std::cout << "Hello World!";
+	std::cout << "My name is Cog";
+	std::cout << "Goodbye";
+
+	//even though our previous code was spanned across multiple lines, we can see that our output wasn't, C++ is fairly flexible about the spacing around our code
+	//- to insert a line break into our output, we stream the special sequence "\n" (we need \, not / )
+
+	std::cout << "Hello World!";
+	std::cout << "\n";
+	std::cout << "My name is Cog";
+	std::cout << "\n";
+	std::cout << "Goodbye";
+
+	//we can also place the \n character within an existing string of text - even in the middle of a string of text
+
+	std::cout << "Hello World!\n";
+	std::cout << "My name is Cog\nGoodbye";
+
+	// streaming endl or std::endl to the output - another way of achieving line breaks
+	//however, the option of inserting the new line sequence in the middle of our text is not available when using endl or std::endl
+	//those need to be streamed independently of any other content
+
+	std::cout << "Hello World!";
+	std::cout << std::endl;
+	std::cout << "My name is Cog" << std::endl;
+	std::cout << "Goodbye" << "\n";
+
+	// Chaining the Operator - stream multiple things to the terminal in a single statement, by using the << operator multiple times
+	//we can further shorten this program to a single statement
+	//we can tell when our statement ends by looking at where the semicolon is
+
+	std::cout << "Hello World!\n"
+		<< "My name is Cog\n"
+		<< "Goodbye";
+
+	// Outputting Numbers
+	//we can output many different types of data
+	//note, we don't need to surround numbers with quotes
+
+	std::cout << 14 << " is a number\n"
+		<< "Another number is " << 41;
+
+	return 0;
+}
