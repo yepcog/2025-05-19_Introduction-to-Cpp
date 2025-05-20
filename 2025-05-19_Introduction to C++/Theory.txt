@@ -80,5 +80,49 @@ int main() {
 	std::cout << 14 << " is a number\n"
 		<< "Another number is " << 41;
 
+
+// 2: Objects, Variables and Types
+
+	// Object-Oriented Programming - major feature of C++, and it is a commonly adopted pattern for building complex projects
+	//when designing object-oriented programs, we think of our code in terms of objects
+	
+	// Objects - digital representation of something our software is trying to represent, or simulate, they're a way to organize our project into distinct entities
+	//example: in object-oriented design, a game would treat each player, enemy, and piece of the environment as distinct objects
+	
+	//objects in programming have properties and actions that they can perform:
+	//- object properties - variables
+	//- actions that the objects can perform - functions
+
+	// Modeling - term, often used to describe the process of identifying what variables and functions our digital objects need to have
+	// Model - simplified representation of a complex physical object or system that we can interact with using code
+	
+	//however, in the context of computer graphics:
+	//"model" is also the name given to a 3D art asset, "modeling" is the activity of creating such assets
+
+	// Variables - pieces of data that help describe the current state of our object
+	//key point: each variable stores data of a specific type
+	
+	// Data types:
+	//- bool - boolean - either true or false
+	//- int - integer - a whole number ( 42, 5, -621, 0 )
+	//- float - decimal, "floating point" number ( 3.4, -2.71, 4.0 )
+	//- char - individual character ( 'a', 'B', '@' )
+	//- string - collection of characters strung together ( "Hello World!" )
+
+	//boolean, int, float, and char - are available to us out of the box
+	//string type - available only because the code we include at the top of our file ( using namespace std; ) gives us access to that type
+
+	//once we identify what type of data we want to store in our variable, we next need to give our variable a name 
+	// Identifier - name of a variable, that we will use in our code
+	
+	//restrictions to these names:
+	//- an identifier cannot contain a space
+	//- it cannot start with a number
+	
+	//and also: strongly recommended that we choose sensible, descriptive names for our variables
+	
+	//when we want to use multiple words to describe our variable, there are some conventions to bypass the inability to use spaces:
+	//- using underscores or capitalization - currentHealth, CurrentHealth, or Current_Health
+
 	return 0;
 }

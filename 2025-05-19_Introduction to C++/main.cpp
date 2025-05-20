@@ -48,5 +48,8 @@ int main() {
 	std::cout << 14 << " is a number\n"
 		<< "Another number is " << 41 << "\n";
 
+
+// 2: Objects, Variables and Types
+
 	return 0;
 }
