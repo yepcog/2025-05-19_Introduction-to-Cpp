@@ -134,6 +134,10 @@
   <ItemGroup>
     <Text Include="Theory.txt" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="lesson47\vdtorCharacterTypesA.h" />
+    <ClInclude Include="lesson47\vdtorCharacterTypesB.h" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

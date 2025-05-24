@@ -1,5 +1,192 @@
 #include <iostream>
 
+// 47:
+struct newPlayer {
+	std::string Name;
+	int Level;
+};
+
+// 47.1:
+struct raiiImage {
+	int Width;
+	int Height;
+	//...
+};
+
+// 47.1:
+class raiiMonster {
+public:
+	raiiMonster() : Art{ new raiiImage( 256,256 ) } {}
+	~raiiMonster() {
+		delete Art;
+	}
+
+	raiiImage* Art{ nullptr };
+};
+
+// 47.2:
+class raiiEncounter {
+public:
+	raiiEncounter() :
+		A{ new raiiMonster() },
+		B{ new raiiMonster() },
+		C{ new raiiMonster() } {
+	}
+	~raiiEncounter() {
+		//Monster type uses RAII so they'll delete their Image resources - we don't need to worry about it here
+		delete A;
+		delete B;
+		delete C;
+	}
+
+	raiiMonster* A{ nullptr };
+	raiiMonster* B{ nullptr };
+	raiiMonster* C{ nullptr };
+};
+
+// 47.3:
+class raiiDungeon {
+public:
+	raiiDungeon() :
+		A{ new raiiEncounter() },
+		B{ new raiiEncounter() } {
+	}
+	~raiiDungeon() {
+		//don't need to worry about the Monsters, as they're deleted by the Encounters
+		delete A;
+		delete B;
+	}
+
+	raiiEncounter* A{ nullptr };
+	raiiEncounter* B{ nullptr };
+};
+
+// 47.4:
+#include "lesson47/vdtorCharacterTypesA.h"
+#include "lesson47/vdtorCharacterTypesB.h"
+
+// 47.5:
+void UAFRender(raiiMonster EnemyCopy) {
+	//...
+}
+
+// 47.6:
+class cctorMonster {
+public:
+	//...
+	cctorMonster(const cctorMonster& Other) :
+		Art{ new raiiImage{Other.Art->Width, Other.Art->Height} } {
+	}
+
+	//this might be wrong
+	raiiImage* Art;
+};
+
+// 47.7A:
+class aoprMonsterA {
+public:
+	//...
+	aoprMonsterA& operator=(const aoprMonsterA& Other) {
+		if (&Other == this) return *this;
+
+		//updating existing Art resource
+		*Art = *Other.Art;
+		
+		return *this;
+	}
+
+	//this might be wrong
+	raiiImage* Art;
+};
+
+// 47.7B:
+class aoprMonsterB {
+public:
+	//...
+	aoprMonsterB& operator=(const aoprMonsterB& Other) {
+		if (&Other == this) return *this;
+
+		//deleting existing resource and creating a new one from scratch
+		delete Art;
+		Art = new raiiImage(*Other.Art);
+		
+		return *this;
+	}
+
+	raiiImage* Art;
+};
+
+// unique_ptr approach:
+class uniqpMonster {
+public:
+	uniqpMonster() :
+		Art{ std::make_unique<raiiImage>(256,256) } {
+	}
+
+	uniqpMonster(const uniqpMonster& Other) :
+		Art{ std::make_unique<raiiImage>(*Other.Art) } {
+	}
+
+	uniqpMonster& operator=(const uniqpMonster& Other) {
+		if (&Other == this) return *this;
+		*Art = *Other.Art;
+		return *this;
+	}
+
+	std::unique_ptr<raiiImage> Art;
+};
+
+// get():
+void getRender(raiiImage* Art) {
+	//getRender() can use Art
+	//...
+
+	//don't own it, so shouldn't delete it
+}
+
+// 47.8:
+raiiImage* extGetArt() {
+	return new raiiImage{ 256,256 };
+}
+
+class rctorMonster {
+public:
+	rctorMonster() : Art{ extGetArt() } {}
+	
+	std::unique_ptr<raiiImage> Art;
+};
+
+// reset():
+raiiImage* resetGetArt() {
+	return new raiiImage{ 256,256 };
+}
+
+class resetMonster {
+public:
+	//tell a smart pointer it is now responsible for a different resource from what it is currently managing
+	void UpdateArt(raiiImage* NewArt) {
+		Art.reset(NewArt);
+	}
+
+	std::unique_ptr<raiiImage> Art;
+};
+
+// release():
+void extHandleArt(raiiImage* Art) {
+	//...
+	delete Art;
+}
+
+class releaseMonster {
+public:
+	//returns a raw pointer to the resource, so that some other object or function can take ownership, and ultimately delete it
+	~releaseMonster() {
+		extHandleArt(Art.release());
+	}
+
+	std::unique_ptr<raiiImage> Art;
+};
+
 int main() {
 // 1: Setting up a C++ Development Environment
 
@@ -123,6 +310,228 @@ int main() {
 	
 	//when we want to use multiple words to describe our variable, there are some conventions to bypass the inability to use spaces:
 	//- using underscores or capitalization - currentHealth, CurrentHealth, or Current_Health
+
+
+// 47: Managing Memory Manually
+
+	//in principle, manually controlling the lifecycles of our objects is incredibly simple
+	//use the new keyword to create an object, and use the delete keyword to get rid of it when it's no longer needed
+
+	// new operator - allocates memory for the type of object we want to create, and forwards any provided arguments to its constructor //new int(42);
+	//it creates our object in dynamic memory, and returns a pointer to it
+	
+	int* newNumber{ new int(41) };
+	std::cout << "\nnewNumber: " << *newNumber;
+
+	// new to create an object from a custom type
+	//note: customType* Object = new customType{ "string arg", int arg, etc.};
+	//instead of: customType* Object{ new customType("string arg", int arg, etc.) }; //this doesn't work
+	
+	newPlayer* newPlayer1 = new newPlayer{ "James", 10 };
+	std::cout << "\nnewPlayer1 name: " << newPlayer1->Name
+		<< ", level: " << newPlayer1->Level;
+
+	// delete operator:
+	//when we no longer need an object created from new, we pass its pointer to the delete operator
+
+	delete newNumber;
+	delete newPlayer1;
+	
+	//std::cout << "\ncheck " << *newNumber; //C6001: Using uninitialized memory 'newNumber'.
+
+	// Memory leaks
+	//the most obvious issue that we'll encounter when manually managing memory is not deleting every object we create
+	//throughout a long-running program, we'll typically need to create many new objects
+	//if we don't delete every object we create, the memory usage of our program increases over time, this is known as - memory leak:
+
+	bool continueRunning{ true };
+	while (continueRunning == true) {
+		int* Integer{ new int(41) };
+		// Memory leaks here (if we leave our running loop as it is)
+
+		delete Integer;
+		break;
+	}
+	//our previous program continuously creates 41s and deletes none of them. eventually, the system we're running on will have no more memory available
+	//this means our program can't create any more objects, which likely means it can no longer function correctly
+
+	// Profiling tools - can show the memory usage of our program
+	//IDEs typically include such tools, or we can use standalone tools such as Valgrind
+	
+	//profiling tools are useful, but they can't catch everything
+	//therefore, we should proactively take steps to ensure our individual classes and functions are memory-safe
+	//best option: avoiding new and delete entirely
+	//instead: rely on containers that take care of the memory management for us, such as:
+	//- std::unique_ptr (for single items)
+	//- std::vector (for collections)
+
+	// Resource Acquisition Is Initialization (RAII)
+	//when that isn't possible, we should consider adopting design patterns that make memory management easier, such as RAII
+	//the word "resource" refers to something that our object needs to work correctly. these subresources are other objects
+
+	//example 47.1:
+	//we can imagine having a Monster type, where each Monster object has some artwork that it uses to render itself to the screen
+	//therefore, each Monster might have a resource in the form of an Image object held as a pointer
+
+	//the RAII pattern ensures that the lifecycle of resources is tied to the lifecycle of the objects that manage them
+	//this means resources are initialized in the object's constructor and released in the destructor, simplifying memory management
+
+	//this pattern simplifies things in a few ways:
+	//- first, it establishes the convention that if an object is alive, we can assume that the resources it depends on are also alive
+	//- secondly, it establishes a clear understanding of which code is responsible for deleting resources
+
+	//example 47.2:
+	//if we delete a Monster (or any other type that uses RAII) we know we don't need to delete its subresources directly - the Monster class itself will handle that
+
+	//RAII is also inherently recursive, so scales for arbitrarily deep dependency trees
+
+	//example 47.3:
+	//this Encounter class also uses RAII, so can be managed in the same way from some object that holds an Encounter as a resource, such as a Dungeon
+
+	// Polymorphism and Virtual Destructors
+	//let's introduce another common way attempting to manage memory manually can trip us up
+	
+	//example 47.4:
+	//let's add a Character class, we'll make polymorphic by giving it a virtual function
+
+	//we'll update our Monster object to inherit from this polymorphic base type
+	//also, add some logging to our Monster's constructor and destructor, so we can see when they're called
+
+	//let's use this polymorphism to create a Monster, and store it in a Character pointer
+
+	vdtorCharacterA* vdtorCharA{ new vdtorMonsterA{} };
+	//...
+	delete vdtorCharA;
+
+	//running our program, we can see that the Monster constructor was called, but its destructor wasn't
+	//this Monster destructor deletes the Image asset that the constructor allocated, so the fact that it's not being called means we have a memory leak
+
+	//why:
+	//like with any C++ function, a destructor is statically bound by default as a performance optimization:
+	
+	//the main() function sees the pointer type as Character, and the Character destructor is not virtual
+	//because of this, it calls the Character version of the destructor rather than searching for the more derived Monster version
+
+	//in general, if a type has any virtual function, then it should also have a virtual destructor
+	//if we don't need any custom behaviour in the destructor, we can implement a virtual default destructor
+
+	//with no further changes, our main() function now calls the Monster destructor
+
+	vdtorCharacterB* vdtorCharB{ new vdtorMonsterB{} };
+	//...
+	delete vdtorCharB;
+
+	// Use After Free and Double Free Errors
+	
+	//let's create a copy of a Monster object by passing it by value to a function
+	//after the function ends, we'll try to use its Art resource
+	
+	//example 47.5A:
+	raiiMonster* UAFEnemyA{ new raiiMonster() };
+	UAFRender(*UAFEnemyA);
+
+	std::cout << "\nArtA Width: "
+		<< UAFEnemyA->Art->Width;
+
+	//why:
+	//our Image subresource is being deleted too early, << UAFEnemy->Art->Width; line in the main function is then attempting to use a resource that has already been deleted
+	//this is called - Use After Free (UAF) error
+	
+	//additionally, this simple program has a second memory issue, called - double free error
+	//we're calling new once (when we construct Enemy ) but delete twice (in the destructor of both Enemy and EnemyCopy)
+	//calling delete on a location that has already been freed results in memory corruption
+
+	//in this case, the error happens in Enemy's destructor, which is called at the end of main just before our program closes
+	//but, if we create two copies of a Monster instance, the corruption can happen when our program is still running
+
+	//example 47.5B
+	raiiMonster* UAFEnemyB{ new raiiMonster() };
+	UAFRender(*UAFEnemyB);
+	
+	//the following program is likely to crash before it logs anything
+	//UAFRender(*UAFEnemyB);
+	
+	std::cout << "\nArtB Width: "
+		<< UAFEnemyB->Art->Width;
+
+	//to solve these problems: we have to intervene in the copying process of Monster objects by defining the copy constructor and copy assignment operators
+
+	//example 47.6A - copy constructor:
+	//when a Monster object is copied, the copy needs to create its own Art resource, which we can do using the new operator
+
+	//example 47.7 - copy assignment operator
+	//we have two approaches we can use:
+	
+	//first option 47.7A:
+	//update the existing Art resource, using values from the Monster we're trying to copy
+	//typically, this involves calling the subresource's copy assignment operator
+	//we haven't implemented a copy assignment operator for the Image class, so we'd use the default
+
+	//second option 47.7B:
+	//delete the existing resource and create a new one from scratch
+	//this typically means calling the copy constructor of the resource type
+	//again, we haven't provided a copy constructor for the the Image type, so this code will use the compiler-provided default
+
+	// Rule of Three
+	//it relates to the following three functions of a class:
+	//- destructor
+	//- copy constructor
+	//- copy assignment operator
+	//rule states: that if we need to provide an implementation for any of these functions, we'd typically need to implement all of them
+
+	//why: 
+	//if compiler-provided default implementation for one of these functions isn't managing memory properly
+	//then compiler-provided default for the other two functions probably aren't managing memory properly either
+
+	// Interactions with Smart Pointers
+	//when our object is managing its resource through a std::unique_ptr, we replace the new operator with std::make_unique(), and we don't need to use the delete operator at all
+
+	//main techniques that are used to combine smart pointers with "raw" pointers:
+
+	// the get() method - returns the raw memory address of the object it is managing (useful when we hand that object off to some function)
+	//such functions typically have no interest in assuming ownership over the object - they just need access to it
+	//as such, they tend to receive the object as a raw pointer, and should never delete the object
+
+	//get() example:
+	uniqpMonster getA;
+	
+	//returns the raw memory address of the object it is managing
+	getRender(getA.Art.get());
+
+	// Constructor from Raw Pointer
+	//sometimes, we'll work with functions that dynamically allocate some memory, then return that memory
+
+	//example 47.8:
+	//if we can't update GetArt() to return a smart pointer, the next best thing is to immediately store what it does return in one
+	//as always, the smart pointer is then assumed to be the owner of that resource, and will automatically handle deletion
+
+	// the reset() method is how we tell a smart pointer it is now responsible for a different resource from what it is currently managing
+	//we pass the dynamically allocated memory address to the reset() method
+	//smart pointer will assume responsibility for this new resource and, if it was previously managing a different resource - it will delete it
+
+	//reset() example:
+	resetMonster resetA;
+	resetA.UpdateArt(resetGetArt());
+
+	// the release() method - will cause the smart pointer to give up ownership over its resource, without deleting it
+	
+	//release() example:
+	//it returns a raw pointer to the resource, so that some other object or function can take ownership, and ultimately delete it
+
+	//in this example, we're imagining HandleArt() is a function that we cannot easily change
+	//therefore, we need to use the smart pointer's release() function to adapt to HandleArt()'s unusual behaviour
+	//otherwise we'd update it to accept its argument as a std::unique_ptr
+
+	//note: smart pointers are intended to manage dynamically allocated memory
+	//stack allocated memory, such as global or local function variables, is already managed automatically
+	//using smart pointers with non-dynamic memory can result in some of the memory corruption issues
+
+	//example:
+	//stack allocated memory address managed by a smart pointer is undefined behavior
+	raiiImage stackArt;
+	
+	//the following program will crash
+	//std::unique_ptr<raiiImage> stackPtr{ &stackArt };
 
 	return 0;
 }

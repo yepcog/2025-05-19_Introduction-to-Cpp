@@ -22,4 +22,12 @@
   <ItemGroup>
     <Text Include="Theory.txt" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="lesson47\vdtorCharacterTypesB.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="lesson47\vdtorCharacterTypesA.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
 </Project>
