@@ -29,5 +29,8 @@
     <ClInclude Include="lesson47\vdtorCharacterTypesA.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="lesson48\SomeNamespace.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -137,6 +137,7 @@
   <ItemGroup>
     <ClInclude Include="lesson47\vdtorCharacterTypesA.h" />
     <ClInclude Include="lesson47\vdtorCharacterTypesB.h" />
+    <ClInclude Include="lesson48\SomeNamespace.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -1,4 +1,5 @@
 #include <iostream>
+#include <vector>
 
 // 47:
 struct newPlayer {
@@ -187,6 +188,44 @@ public:
 	std::unique_ptr<raiiImage> Art;
 };
 
+
+// 48:
+
+// 48.1:
+float GetAutoFloat() {
+	return 3.14f;
+}
+
+// 48.2A:
+auto GetAutoDouble() {
+	return 3.14;
+}
+
+// 48.2B:
+auto GetAutoWobble() {
+	if (true) {
+		//return 3.14f; //E2546: deduced return type "float" conflicts with previously deduced type "double"
+		return static_cast<double>(9.8f);
+	}
+	return 3.14;
+}
+
+// 48.2C:
+double GetBobble() {
+	if (true) {
+		return 8.9f;
+	}
+	return 3.14;
+}
+
+// 48.3:
+auto autoAdd(auto x, auto y) {
+	return x + y;
+}
+
+// 48.5:
+#include "lesson48/SomeNamespace.h"
+
 int main() {
 // 1: Setting up a C++ Development Environment
 
@@ -309,10 +348,82 @@ int main() {
 
 	//example:
 	//stack allocated memory address managed by a smart pointer is undefined behavior
-	raiiImage stackArt;
+	//raiiImage stackArt;
 	
 	//the following program will crash
 	//std::unique_ptr<raiiImage> stackPtr{ &stackArt };
+
+
+// 48: Automatic Type Deduction using auto
+
+	auto autoNumber{ 4 };
+
+	//example 48.1:
+	auto autoFloat{ GetAutoFloat() };
+	std::cout << "\n\nautoFloat: " << typeid(autoFloat).std::type_info::name(); //autoFloat: float
+
+	// auto vs Dynamic Typing
+
+	auto autoVariablew{ 420 };
+	//autoVariablew = "tired"; //C2440: '=': cannot convert from 'const char [6]' to 'int'
+	//auto autoVariable; //C3531: 'autoVariable': a symbol whose type contains 'auto' must have an initializer
+
+	// auto with Function Return Types
+
+	//example 48.2A:
+	auto autoDouble{ GetAutoDouble() };
+	std::cout << "\nautoDouble: "
+		//<< typeid(autoDouble).name();
+		<< typeid(autoDouble).std::type_info::name(); //autoDouble: double
+
+	//example 48.2B:
+	auto autoWobble{ GetAutoWobble() };
+	std::cout << "\nautoWobble: " << autoWobble
+		<< " is a " << typeid(autoWobble).std::type_info::name(); //autoWobble: 9.8 is a double
+
+	//example 48.2C:
+	auto autoBobble{ GetBobble() };
+	std::cout << "\nautoBobble: " << autoBobble
+		<< " is a " << typeid(autoBobble).std::type_info::name(); //autoBobble: 8.9 is a double
+
+	// auto with Function Parameters (C++20)
+
+	//example 48.3:
+	auto autoA{ autoAdd(2, 4) };
+	std::cout << "\nautoA: " << autoA
+		<< " is an " << typeid(autoA).std::type_info::name(); //autoA: 6 is an int
+
+	auto autoB{ autoAdd(2, 4.0) };
+	std::cout << "\nautoB: " << autoB
+		<< " is a " << typeid(autoB).std::type_info::name(); //autoB: 6 is a double
+
+	// Qualifiers: auto Pointers, auto References
+
+	//example 48.4:
+	int autoX{ 1 };
+	//reference to an automatically deduced type
+	auto& referenceToX{ autoX };
+	//pointer to an automatically deduced type
+	auto* pointerToX{ &autoX };
+
+	// Should We Use auto?
+
+	//example 48.5:
+	SomeNamespace::SomeType autoObjectA;
+	SomeNamespace::SomeType autoObjectB{
+		static_cast<SomeNamespace::SomeType>(autoObjectA)
+	};
+
+	auto autoObjectC{
+		static_cast<SomeNamespace::SomeType>(autoObjectA)
+	};
+
+	//example 48.6:
+	using SomeParty =
+		std::vector<std::pair<SomeNamespace::SomeType*, bool>>;
+	//SomeParty PartyA{ GetParty() };
+
+	//we should use auto sparingly and only to improve clarity and readability, not simply convenience
 
 	return 0;
 }

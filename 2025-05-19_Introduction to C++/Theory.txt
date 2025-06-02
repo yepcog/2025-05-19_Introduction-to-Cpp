@@ -187,6 +187,44 @@ public:
 	std::unique_ptr<raiiImage> Art;
 };
 
+
+// 48:
+
+// 48.1:
+float GetAutoFloat() {
+	return 3.14f;
+}
+
+// 48.2A:
+auto GetAutoDouble() {
+	return 3.14;
+}
+
+// 48.2B:
+auto GetAutoWobble() {
+	if (true) {
+		//return 3.14f; //E2546: deduced return type "float" conflicts with previously deduced type "double"
+		return static_cast<double>(9.8f);
+	}
+	return 3.14;
+}
+
+// 48.2C:
+double GetBobble() {
+	if (true) {
+		return 8.9f;
+	}
+	return 3.14;
+}
+
+// 48.3:
+auto autoAdd(auto x, auto y) {
+	return x + y;
+}
+
+// 48.5:
+#include "lesson48/SomeNamespace.h"
+
 int main() {
 // 1: Setting up a C++ Development Environment
 
@@ -528,10 +566,133 @@ int main() {
 
 	//example:
 	//stack allocated memory address managed by a smart pointer is undefined behavior
-	raiiImage stackArt;
+	//raiiImage stackArt;
 	
 	//the following program will crash
 	//std::unique_ptr<raiiImage> stackPtr{ &stackArt };
+
+
+// 48: Automatic Type Deduction using auto
+
+	//when we're initializing a variable with a value, the compiler can automatically infer the type our variable should have
+	//below, we're initializing autoNumber using an int literal, so the compiler will set MyNumber's type to int:
+	auto autoNumber{ 4 };
+
+	//types can also automatically be deduced in a variety of contexts
+	//for example: when initializing a variable using an expression, such as a function call
+	//below, GetFloat()'s return type is float, so MyNumber will have a type of float:
+	//example 48.1:
+	auto autoFloat{ GetAutoFloat() };
+	std::cout << "\n\nautoFloat: " << typeid(autoFloat).std::type_info::name();
+
+	// auto vs Dynamic Typing
+
+	//it is important to note that auto is not an implementation of dynamic types
+	//auto will fix the variable type as soon as it is created
+	//then, any future assignment will try to convert the new value to that type
+	//below, we create an int variable, and then try to update it by converting the new value to that same type
+	auto autoVariablew{ 420 };
+	//autoVariablew = "tired"; //C2440: '=': cannot convert from 'const char [6]' to 'int'
+
+	//if we try to use auto without providing an initial value, the compiler cannot infer what to set its type to:
+	//auto autoVariable; //C3531: 'autoVariable': a symbol whose type contains 'auto' must have an initializer
+
+	// auto with Function Return Types
+
+	//the auto keyword can also be used to automatically determine the return type of a function
+	//this can be inferred by how the function uses the return statement
+	//example 48.2A:
+	auto autoDouble{ GetAutoDouble() };
+	std::cout << "\nautoDouble: "
+		//<< typeid(autoDouble).name(); //for whatever reasons works w/out #include <typeinfo>
+		<< typeid(autoDouble).std::type_info::name(); //looks weird if you ask me, but should be better
+
+	//this depends on all of our return statements deducing to the same type
+	//the following example will not work, as the compiler cannot determine whether the return type should be float or int:
+	//example 48.2B:
+
+	//if we convert all return types to a consistent type, our code will compile again
+	//in the following example, the return type of GetDouble will correctly be inferred as double
+	auto autoWobble{ GetAutoWobble() };
+	std::cout << "\nautoWobble: " << autoWobble
+		<< " is a " << typeid(autoWobble).std::type_info::name();
+
+	//were we to specify the return type, the compiler would implicitly convert the returned values to that type, as we've seen before
+	//below, our code will compile, with our function returning a double with the value of 9.8 if SomeCondition is true:
+	//example 48.2C:
+	auto autoBobble{ GetBobble() };
+	std::cout << "\nautoBobble: " << autoBobble
+		<< " is a " << typeid(autoBobble).std::type_info::name();
+
+	// auto with Function Parameters (C++20)
+
+	//as of C++ 20, auto can also be used with function parameters:
+	//example 48.3:
+	auto autoA{ autoAdd(2, 4) };
+	std::cout << "\nautoA: " << autoA
+		<< " is an " << typeid(autoA).std::type_info::name();
+
+	auto autoB{ autoAdd(2, 4.0) };
+	std::cout << "\nautoB: " << autoB
+		<< " is a " << typeid(autoB).std::type_info::name();
+
+	// Function Templates
+
+	//in the previous example, we're technically not defining a function at all - we're defining a function template
+	//the compiler can use function templates to automatically create functions at compile time, based on how we use that template through the rest of our code
+
+	//in this case, we're using the template with two unique argument lists - (int, int) and (int, double)
+	//as such, the compiler will generate two functions:
+	//- one with the prototype: int Add(int, int)
+	//- second with the prototype: double Add(int, double)
+
+	// Qualifiers: auto Pointers, auto References
+
+	//as with any type, we can add qualifiers to our auto declarations
+	//for example, we can create references and pointers to automatically deduced types:
+	//example 48.4:
+	int autoX{ 1 };
+	//reference to an automatically deduced type
+	auto& referenceToX{ autoX };
+	//pointer to an automatically deduced type
+	auto* pointerToX{ &autoX };
+
+	// Should We Use auto?
+
+	//generally, we should only use auto if it makes our code clearer (where it reduces unnecessary noise)
+	
+	//typically this involves scenarios where we're repeating a complex type multiple times within the same expression:
+	//example 48.5:
+	SomeNamespace::SomeType autoObjectA;
+	SomeNamespace::SomeType autoObjectB{
+		static_cast<SomeNamespace::SomeType>(autoObjectA)
+	};
+
+	//adding auto here will reduce the noise, and not hide the type as we're already specifying it in the static_cast parameter anyway
+	auto autoObjectC{
+		static_cast<SomeNamespace::SomeType>(autoObjectA)
+	};
+
+	//generally, auto should not be used if our only reason is to avoid some keystrokes
+	//if our type is verbose and repeated often in our file, we can be tempted to use auto, but we should consider a type alias instead
+	//after adding the following using statement, we can refer to our type simply as Party, rather than being tempted to use auto:
+	//example 48.6:
+	using SomeParty =
+		std::vector<std::pair<SomeNamespace::SomeType*, bool>>;
+	//SomeParty PartyA{ GetParty() };
+
+	// There are two main problems with auto:
+	
+	//- Determining the type of auto variables requires tool assistance
+	//we've seen how in most IDEs, we can easily hover over a type to determine its type, even if the code is using auto
+	//in larger projects, code is often read in tools that don't provide the functionality of IDEs (example is source control applications such as GitHub)
+
+	//- Determining the type of auto variables requires our code be compilable
+	//even if our editors can show us how auto is being interpreted, that capability often requires our code to be in a compilable state
+	//if we introduce an issue that prevents code from being compilable
+	//we often lose visibility on the types we were relying on being deduced by the compiler (this can make the issue even more difficult to debug)
+
+	//we should use auto sparingly and only to improve clarity and readability, not simply convenience
 
 	return 0;
 }
